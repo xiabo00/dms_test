@@ -11,7 +11,7 @@ __pycache__/
 *.pyz
 *.html
 *.pkg
-*.json
+cert.json
 a.txt
 config_in.py
 build/DMS/warn-DMS.txt

@@ -1,0 +1,13 @@
+{
+	"Model": "LBB500",
+	"LoggingLevel": "DEBUG",
+	"DesiredVersion": "1.0.1-alpha.1",
+	"PostalCode": "S0000T02",
+	"LiftCode": "A",
+	"AccPort": "/dev/ttyS1",
+    "DoorOpenSensor": "Yes",
+	"Floors": ["B1", "B2", "1-10"],
+	"TripDataCollection": "No",
+	"DoorDataCollection": "No",
+	"FullDataCollection": "No"
+}

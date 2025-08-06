@@ -1,0 +1,88 @@
+{
+    "LogRaw": false,
+    "Brand": "IFE",
+    "LoggingLevel": "DEBUG",
+    "LiftSignalUpdateTime": 30,
+    "DesiredVersion": "1.1.0",
+    "RS485Port": "/dev/ttyS0",
+    "LiftCode": "A",
+    "PostalCode": "600117",
+    "SerialNumber": "S111111",
+    "RearDoor": "Yes",
+    "RearDoorMainCOP": "Yes",
+    "RearDoorSubCOP": "Yes",
+    "FrontDoor": "Yes",
+    "FrontDoorMainCOP": "Yes",
+    "FrontDoorSubCOP": "Yes",
+    "PowerSupplyType": "EBOPS",
+    "PowerSupplyVoltage": 24,
+    "Threshold": {
+        "UPS": {
+            "base_voltage": 24.0,
+            "button": "Yes",
+            "upper": 1.2,
+            "lower": 0.8
+        },
+        "ARD": {
+            "base_voltage": 24.0,
+            "button": "Yes",
+            "upper": 1.2,
+            "lower": 0.8
+        }
+    },
+    "AlertConfig": {
+        "CallButtonAlert": {
+            "times": 60,
+            "duration": 7200
+        },
+        "HallCallButtonAlert": {
+            "times": 60,
+            "duration": 3600,
+            "counter": {
+                "times": 2,
+                "duration": 86400
+            }
+        },
+        "DoorOpenButtonAlert": {
+            "trips": 10
+        },
+        "DoorCloseButtonAlert": {
+            "trips": 10
+        },
+        "fullLoadBypassAlert": {
+            "times": 3,
+            "duration": 3600,
+            "counter": {
+                "times": 5,
+                "duration": 86400
+            }
+        },
+        "loadCellAlert": {
+            "trips": 10
+        },
+        "doorAbnormalReverseDirectionAlert": {
+            "times": 2,
+            "duration": 300
+        },
+        "safetyEdgeAbnormal": {
+            "button": "Yes",
+            "times": 3,
+            "trips": 10
+        },
+        "curtainSensorAbnormal": {
+            "times": 5,
+            "trips": 10
+        },
+        "regenerativePowerAlert": {
+            "trips": 10
+        },
+        "powerAlert": {
+            "duration": 1800,
+            "times": 5
+        },
+        "gateSwitchAlert": {
+            "duration": 86400,
+            "times": 50
+        }
+    }
+}

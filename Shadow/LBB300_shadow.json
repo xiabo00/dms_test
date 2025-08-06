@@ -1,0 +1,10 @@
+{
+    "LoggingLevel": "DEBUG",
+    "AccCartopPort": "/dev/ttyS1",
+    "PostalCode": "DEV0000",
+    "LiftCode": "A",
+    "DesiredVersion": "1.0.1",
+    "TripDataCollection": "Yes",
+    "DoorDataCollection": "Yes",
+    "FullDataCollection":"No"
+}
