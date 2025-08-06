@@ -1,0 +1,4 @@
+PyQt5~=5.15.11
+boto3~=1.33.5
+paramiko~=3.5.1
+toml

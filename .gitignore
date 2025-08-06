@@ -1,0 +1,19 @@
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.spec
+*.toc
+*.zip
+# *.txt
+*.exe
+*.pyz
+*.html
+*.pkg
+*.json
+a.txt
+config_in.py
+build/DMS/warn-DMS.txt
+build/main/warn-main.txt
+*.tar

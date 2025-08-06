@@ -1,0 +1,17 @@
+# ==== generic config ====
+# project name
+CONFIG_PROJECT_NAME = "DMS"
+# app name
+CONFIG_APP_NAME = "DMS"
+# aws endpoint
+CONFIG_AWS_ENDPOINT = "a2gn05h2x84h88.iot.ap-southeast-1.amazonaws.com"
+# aws x509 endpoint
+CONFIG_AWS_X509_ENDPOINT = "c33yxdrciuhe9.credentials.iot.ap-southeast-1.amazonaws.com"
+CONFIG_AWS_X509_ROLE_ALIAS = "RoleAliasesIoTDevice"
+# aws ota bucket
+CONFIG_AWS_S3_OTA_BUCKET = "awsiot-853923275848"
+CONFIG_AWS_S3_OTA_BUCKET_REGION = "us-east-1"
+# aws ota package path
+CONFIG_AWS_S3_OTA_PACKAGE_PATH = "embedded-software"
+# aws certificate
+CONFIG_CERTIFICATE_ID = "4bce1a7504c7a8ba6375c695f456e8b4f4983268b2f1ba37fa9b44fce5e44b7b"

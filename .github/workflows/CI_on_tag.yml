@@ -1,0 +1,117 @@
+# CI_on_tag.yml 应包含（触发条件：打tag时运行）
+name: CI on Tag
+
+on:
+  push:
+    tags: ['*']  # 匹配tag
+
+jobs:
+  validateVersion:
+    name: Validate Version
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.extractVersion.outputs.version }}
+    steps:
+      - name: Dump context (for debugging)
+        run: echo "REF=$GITHUB_REF"
+    
+      - name: Get and validate tag format
+        id: extractVersion
+        run: |
+          # 提取 TAG 名称（格式：refs/tags/1.2.3）
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Extracted TAG_NAME: $TAG_NAME"
+
+          # 使用正则验证 tag 格式（例如 1.2.3 或 1.2.3-beta.1）
+          if [[ ! "$TAG_NAME" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z0-9]+)?(-[a-zA-Z0-9]+\.(0|100|[1-9][0-9]?))?$ ]]; then
+            echo "❌ Invalid tag format: $TAG_NAME"
+            exit 1
+          fi
+
+          echo "✅ Valid tag format: $TAG_NAME"
+          echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
+
+  build-and-release:
+    needs: validateVersion
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.16", "3.13.2", "3.10.17"]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    env:
+      VERSION: ${{ needs.validateVersion.outputs.version }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}  # 使用 SSH 密钥（推荐）
+
+    # 2.设置python版本
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'  # 启用 pip 的自动缓存功能
+        
+    # 3.安装依赖并缓存
+    - name: Upgrade pip and setuptools
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+    
+    - name: Install dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # 4.将cert写入到文件中
+    - name: Build JSON with certs
+      run: |
+        # 使用 jq 构建 JSON（自动处理转义）
+        JSON_DATA=$(jq -n \
+          --arg cert "${{ secrets.AWS_CERTIFICATE }}" \
+          --arg privateKey "${{ secrets.AWS_PRIVATE_KEY }}" \
+          --arg rootCA "${{ secrets.rootCA }}" \
+          '{
+            cert: $cert,
+            privateKey: $privateKey,
+            rootCA: $rootCA
+          }'
+        )
+      
+        # 写入文件
+        echo "$JSON_DATA" > certs.json
+      
+        # 验证文件内容（调试用）
+        cat certs.json
+
+    # 5. 配置AWS
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+
+    # 新增步骤：合并AWS凭证到certs.json
+    - name: Merge AWS credentials
+      run: |
+        jq --arg accessKey "$AWS_ACCESS_KEY_ID" \
+            --arg secretKey "$AWS_SECRET_ACCESS_KEY" \
+            --arg region "$AWS_REGION" \
+            '.awsCredentials = {
+              accessKey: $accessKey,
+              secretKey: $secretKey,
+              region: $region
+            }' certs.json > merged.json && mv merged.json certs.json
+
+        # 安全验证
+        jq 'del(.privateKey) | del(.awsCredentials.secretKey)' certs.json
+
+    # 6.构建app
+    - name: Build application
+      run: |
+        echo "version is: $VERSION"
+        python3 build.py --version="$VERSION" -c certs.json

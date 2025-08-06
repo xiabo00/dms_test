@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="/DMS">
+    <file>images/LMDC-V2.png</file>
+    <file>images/LBB300.png</file>
+    <file>images/LMDC.png</file>
+    <file>images/LBB400.png</file>
+    <file>images/LMD6000.png</file>
+  </qresource>
+</RCC>
