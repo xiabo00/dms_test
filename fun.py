@@ -923,8 +923,8 @@ def populate_s3_versions(ui_components, py_version, parent_widget=None):
         else:
             s3 = boto3.client(
                 's3',
-                aws_access_key_id=config_in.CONFIG_AWS_KEY,
-                aws_secret_access_key=config_in.CONFIG_AWS_SECRET_KEY,
+                aws_access_key_id=config_in.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=config_in.AWS_SECRET_ACCESS_KEY,
                 region_name=config_in.CONFIG_AWS_S3_OTA_BUCKET_REGION  # 你的S3桶所在区域
             )
 
@@ -998,7 +998,7 @@ def download_via_ssh(ssh, ui_components, download_path, remote_path, dialog, par
     if not selected_files:
         logger.error("请至少选择一个文件进行下载")
         QMessageBox.warning(parent_widget, "警告", "请至少选择一个文件进行下载")
-        return
+        return False  # 表示失败
 
     try:
         sftp = ssh['client'].open_sftp()
@@ -1006,17 +1006,17 @@ def download_via_ssh(ssh, ui_components, download_path, remote_path, dialog, par
             remote_file = f"{remote_path}/{filename}"
             local_file = f"{download_path}/{filename}"
             sftp.get(remote_file, local_file)
-            # print(f"已下载: {filename}")
 
         QMessageBox.information(parent_widget, "完成", f"已成功下载 {len(selected_files)} 个文件")
         success_label = QLabel("✅ 下载log文件成功！")
         success_label.setStyleSheet("color: green; font-weight: bold; font-size: 18px;")
         ui_components['seventh_row']['content_layout'].addWidget(success_label)
+        return True  # 表示成功
 
     except Exception as e:
         logger.error(f"下载失败: {str(e)}")
         QMessageBox.critical(parent_widget, "错误", f"下载失败: {str(e)}")
-        return
+        return False  # 表示失败
 
 
 def show_download_dialog(ssh, ui_components, parent_widget=None):
@@ -1109,22 +1109,25 @@ def show_download_dialog(ssh, ui_components, parent_widget=None):
         return
 
     # 执行对话框
-    if dialog.exec_():
+    while True:
+        if not dialog.exec_():  # 用户点击了 Cancel
+            break  # 退出循环，不重新打开对话框
+
         try:
             download_path = dialog.path_display.text()
             remote_path = "/opt/lmd-tss/log" if software_type == "LMD-TSS" else remote_path
 
-            # 执行下载
-            download_via_ssh(ssh, ui_components, download_path, remote_path, dialog)
-
-            # 仅非直接下载模式需要清理临时文件
-            if generated_files and not cmd_info.get('direct_download', False):
-                logger.info(f"开始清理临时文件: {generated_files}")
-                stdin, stdout, stderr = ssh['client'].exec_command(cmd_info['cleanup_cmd'])
-                if stderr.read():
-                    logger.error(f"清理临时文件失败: {stderr.read().decode('utf-8')}")
-                else:
-                    logger.info("临时文件清理完成")
+            # 如果下载成功，退出循环；否则继续循环（重新打开对话框）
+            if download_via_ssh(ssh, ui_components, download_path, remote_path, dialog):
+                # 仅非直接下载模式需要清理临时文件
+                if generated_files and not cmd_info.get('direct_download', False):
+                    logger.info(f"开始清理临时文件: {generated_files}")
+                    stdin, stdout, stderr = ssh['client'].exec_command(cmd_info['cleanup_cmd'])
+                    if stderr.read():
+                        logger.error(f"清理临时文件失败: {stderr.read().decode('utf-8')}")
+                    else:
+                        logger.info("临时文件清理完成")
+                break  # 下载成功，退出循环
 
         except Exception as e:
             logger.error(f"下载过程中出错: {str(e)}")

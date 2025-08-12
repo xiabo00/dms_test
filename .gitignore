@@ -17,3 +17,4 @@ config_in.py
 build/DMS/warn-DMS.txt
 build/main/warn-main.txt
 *.tar
+images_rc.py
